@@ -173,6 +173,13 @@
     <button class="btn-logout" onclick="logout()">Çıkış</button>
   </nav>
 
+  <!-- LOVE COUNTER -->
+  <div style="background:linear-gradient(135deg,#fce8ec,#f5e6d8);border-bottom:1px solid #f0dde4;padding:10px 20px;text-align:center;">
+    <span style="font-family:'Playfair Display',serif;color:var(--rose-dark);font-size:15px;">
+      💕 Birlikte <span id="love-days" style="font-size:20px;font-weight:600;"></span> gün, <span id="love-hours"></span> saat, <span id="love-mins"></span> dakika, <span id="love-secs"></span> saniye 💕
+    </span>
+  </div>
+
   <!-- PHOTOS PAGE -->
   <div class="page active" id="page-photos">
     <div class="page-header">
@@ -451,6 +458,23 @@
   function escapeHtml(t) {
     return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
+
+  // LOVE COUNTER
+  function updateCounter() {
+    const start = new Date('2023-11-03T00:00:00');
+    const now = new Date();
+    const diff = now - start;
+    const days = Math.floor(diff / (1000*60*60*24));
+    const hours = Math.floor((diff % (1000*60*60*24)) / (1000*60*60));
+    const mins = Math.floor((diff % (1000*60*60)) / (1000*60));
+    const secs = Math.floor((diff % (1000*60)) / 1000);
+    document.getElementById('love-days').textContent = days;
+    document.getElementById('love-hours').textContent = hours;
+    document.getElementById('love-mins').textContent = mins;
+    document.getElementById('love-secs').textContent = secs;
+  }
+  updateCounter();
+  setInterval(updateCounter, 1000);
 
   // AUTH STATE
   onAuthStateChanged(auth, (user) => {
