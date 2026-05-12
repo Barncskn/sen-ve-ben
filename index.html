@@ -99,6 +99,16 @@
   .note-saved { color:#5a9a6a; font-size:13px; margin-top:6px; display:none; }
   .btn-delete-photo { padding:10px 16px; background:transparent; color:#c94560; border:1.5px solid #f0dde4; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all .2s; margin-left:8px; }
   .btn-delete-photo:hover { border-color:#c94560; background:#fce8ec; }
+  .btn-download-photo { padding:10px 16px; background:transparent; color:var(--rose-dark); border:1.5px solid #f0dde4; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; transition:all .2s; margin-left:8px; text-decoration:none; display:inline-flex; align-items:center; }
+  .btn-download-photo:hover { border-color:var(--rose); background:var(--rose-light); }
+  .msg-actions { display:none; gap:4px; margin-top:2px; }
+  .msg:hover .msg-actions { display:flex; }
+  .msg-action-btn { padding:3px 8px; border:none; background:transparent; cursor:pointer; font-size:11px; color:var(--text-muted); border-radius:6px; font-family:'DM Sans',sans-serif; transition:all .2s; }
+  .msg-action-btn:hover { background:var(--warm); color:var(--rose-dark); }
+  .msg-edit-area { width:100%; padding:8px 12px; border:1.5px solid var(--rose); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; background:var(--cream); color:var(--text); resize:none; margin-top:4px; }
+  .msg-edit-btns { display:flex; gap:6px; margin-top:4px; }
+  .msg-edit-save { padding:5px 12px; background:var(--rose); color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; }
+  .msg-edit-cancel { padding:5px 12px; background:transparent; color:var(--text-muted); border:1px solid #f0dde4; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; }
 
   /* MESSAGES PAGE */
   .messages-container { display:flex; flex-direction:column; height:calc(100vh - 160px); }
@@ -229,7 +239,10 @@
             <div style="font-size:13px;color:var(--text-muted)" id="modal-uploader"></div>
             <div style="font-size:12px;color:#c4a4a4" id="modal-date"></div>
           </div>
-          <button class="btn-delete-photo" onclick="deleteCurrentPhoto()">🗑 Sil</button>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <a class="btn-download-photo" id="modal-download" href="#" download target="_blank">⬇ İndir</a>
+            <button class="btn-delete-photo" onclick="deleteCurrentPhoto()">🗑 Sil</button>
+          </div>
         </div>
         <label class="modal-label">Not / Açıklama</label>
         <textarea class="modal-note-area" id="modal-note" placeholder="Bu fotoğraf hakkında bir not ekle..."></textarea>
@@ -389,6 +402,7 @@
   window.openModal = (id, data) => {
     currentPhotoId = id;
     document.getElementById('modal-img').src = data.url;
+    document.getElementById('modal-download').href = data.url;
     document.getElementById('modal-note').value = data.note || '';
     document.getElementById('modal-uploader').textContent = '📍 ' + (data.uploadedBy || '');
     const date = data.uploadedAt?.toDate ? data.uploadedAt.toDate().toLocaleDateString('tr-TR', {year:'numeric',month:'long',day:'numeric'}) : '';
@@ -430,11 +444,16 @@
         const isMine = d.uid === currentUser.uid;
         const div = document.createElement('div');
         div.className = 'msg ' + (isMine ? 'mine' : 'theirs');
+        div.dataset.id = docSnap.id;
         const time = d.sentAt?.toDate ? d.sentAt.toDate().toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'}) : '';
         div.innerHTML = `
           ${!isMine ? `<div class="msg-sender">${d.senderName}</div>` : ''}
           <div class="msg-bubble">${escapeHtml(d.text)}</div>
-          <div class="msg-meta">${time}</div>
+          <div class="msg-meta">${time}${d.edited ? ' (düzenlendi)' : ''}</div>
+          ${isMine ? `<div class="msg-actions">
+            <button class="msg-action-btn" onclick="editMessage('${docSnap.id}', this)">✏️ Düzenle</button>
+            <button class="msg-action-btn" onclick="deleteMessage('${docSnap.id}')">🗑 Sil</button>
+          </div>` : ''}
         `;
         list.appendChild(div);
       });
@@ -442,7 +461,37 @@
     });
   }
 
-  window.sendMessage = async () => {
+  window.deleteMessage = async (id) => {
+    if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+    await deleteDoc(doc(db, 'messages', id));
+  };
+
+  window.editMessage = (id, btn) => {
+    const msgDiv = btn.closest('.msg');
+    const bubble = msgDiv.querySelector('.msg-bubble');
+    const currentText = bubble.textContent;
+    bubble.style.display = 'none';
+    msgDiv.querySelector('.msg-actions').style.display = 'none';
+    const editArea = document.createElement('textarea');
+    editArea.className = 'msg-edit-area';
+    editArea.value = currentText;
+    const btns = document.createElement('div');
+    btns.className = 'msg-edit-btns';
+    btns.innerHTML = `<button class="msg-edit-save">Kaydet</button><button class="msg-edit-cancel">İptal</button>`;
+    msgDiv.appendChild(editArea);
+    msgDiv.appendChild(btns);
+    btns.querySelector('.msg-edit-save').onclick = async () => {
+      const newText = editArea.value.trim();
+      if (!newText) return;
+      await updateDoc(doc(db, 'messages', id), { text: newText, edited: true });
+      editArea.remove(); btns.remove();
+      bubble.style.display = ''; msgDiv.querySelector('.msg-actions').style.display = '';
+    };
+    btns.querySelector('.msg-edit-cancel').onclick = () => {
+      editArea.remove(); btns.remove();
+      bubble.style.display = ''; msgDiv.querySelector('.msg-actions').style.display = '';
+    };
+  };
     const input = document.getElementById('msg-input');
     const text = input.value.trim();
     if (!text) return;
