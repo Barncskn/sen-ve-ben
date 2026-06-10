@@ -1,0 +1,22 @@
+{
+  "name": "Sen ve Ben",
+  "short_name": "Sen ve Ben",
+  "description": "Sadece ikimizin yeri 💕",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf6f0",
+  "theme_color": "#e8637a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://api.iconify.design/twemoji:heart-with-ribbon.svg?width=192",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "https://api.iconify.design/twemoji:heart-with-ribbon.svg?width=512",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
