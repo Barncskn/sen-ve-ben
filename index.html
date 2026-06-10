@@ -204,11 +204,12 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div class="page-header">
         <h2 class="page-title">Anılarımız 📸</h2>
         <button class="upload-btn" onclick="document.getElementById('file-input').click()" id="upload-btn">+ Ekle</button>
-        <input type="file" id="file-input" accept="image/*" onchange="uploadPhoto(this)">
+        <input type="file" id="file-input" accept="image/*" multiple onchange="uploadPhotos(this)">
+
       </div>
       <div class="upload-prog" id="upload-prog">
         <div class="loading" style="border-color:rgba(201,69,96,.3);border-top-color:var(--rose-dark)"></div>
-        <span>Yükleniyor...</span>
+        <span id="upload-prog-text">Yükleniyor...</span>
       </div>
       <div class="photos-grid" id="photos-grid">
         <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🌸</div><p>Henüz fotoğraf yok!</p></div>
@@ -335,21 +336,27 @@ window.showPage = pg => {
 };
 
 // PHOTOS
-window.uploadPhoto = async input => {
-  const file = input.files[0]; if (!file) return;
+window.uploadPhotos = async input => {
+  const files = Array.from(input.files); if (!files.length) return;
   const btn = document.getElementById('upload-btn');
   const prog = document.getElementById('upload-prog');
+  const progText = document.getElementById('upload-prog-text');
   btn.disabled = true; btn.innerHTML = '<div class="loading"></div>';
   prog.classList.add('show');
-  try {
-    const fd = new FormData();
-    fd.append('file', file); fd.append('upload_preset', PRESET);
-    const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST',body:fd});
-    const data = await res.json();
-    if (data.secure_url) {
-      await addDoc(collection(db,'photos'), { url:data.secure_url, note:'', uploadedBy:me.displayName||me.email, uploadedAt:serverTimestamp() });
-    } else alert('Yükleme başarısız!');
-  } catch(ex) { alert('Hata: '+ex.message); }
+  let done = 0;
+  for (const file of files) {
+    progText.textContent = files.length > 1 ? `Yükleniyor... (${done+1}/${files.length})` : 'Yükleniyor...';
+    try {
+      const fd = new FormData();
+      fd.append('file', file); fd.append('upload_preset', PRESET);
+      const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST',body:fd});
+      const data = await res.json();
+      if (data.secure_url) {
+        await addDoc(collection(db,'photos'), { url:data.secure_url, note:'', uploadedBy:me.displayName||me.email, uploadedAt:serverTimestamp() });
+      }
+    } catch(ex) { console.error(ex); }
+    done++;
+  }
   btn.disabled=false; btn.innerHTML='+ Ekle';
   prog.classList.remove('show'); input.value='';
 };
