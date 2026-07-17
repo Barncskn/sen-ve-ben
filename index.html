@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Sen ve Ben">
+<meta name="theme-color" content="#e8637a">
+<link rel="manifest" href="/manifest.json">
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "3f2d1657-97b8-4b06-be2f-fe04f359f530",
+      safari_web_id: "web.onesignal.auto.3f2d1657-97b8-4b06-be2f-fe04f359f530",
+      notifyButton: { enable: false },
+      allowLocalhostAsSecureOrigin: true,
+    });
+  });
+</script>
+<title>Sen ve Ben 💕</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --rose: #e8637a;
+  --rose-light: #fce8ec;
+  --rose-dark: #c94560;
+  --cream: #fdf6f0;
+  --warm: #f5e6d8;
+  --text: #2d1f1f;
+  --text-muted: #8a6a6a;
+  --white: #ffffff;
+  --shadow: 0 2px 12px rgba(232,99,122,0.12);
+  --nav-h: 56px;
+  --bottom-h: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; overflow:hidden; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); }
+
+/* AUTH */
+#auth-screen {
+  position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
+  background:linear-gradient(135deg,#fce8ec,#fdf6f0,#f5e6d8);
+  overflow-y:auto; padding:20px;
+}
+.auth-card { background:var(--white); border-radius:24px; padding:36px 28px; width:100%; max-width:380px; text-align:center; box-shadow:0 12px 48px rgba(232,99,122,0.18); }
+.auth-heart { font-size:44px; margin-bottom:12px; display:block; animation:beat 1.5s ease-in-out infinite; }
+@keyframes beat { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+.auth-title { font-family:'Playfair Display',serif; font-size:28px; color:var(--rose-dark); margin-bottom:6px; }
+.auth-sub { color:var(--text-muted); font-size:13px; margin-bottom:28px; }
+.auth-tabs { display:flex; background:var(--warm); border-radius:12px; padding:3px; margin-bottom:20px; }
+.auth-tab { flex:1; padding:9px; border:none; background:transparent; border-radius:9px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:var(--text-muted); transition:all .2s; }
+.auth-tab.active { background:var(--white); color:var(--rose-dark); box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+.inp-group { margin-bottom:14px; text-align:left; }
+.inp-group label { font-size:11px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:5px; }
+.inp-group input { width:100%; padding:13px 15px; border:1.5px solid #f0dde4; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:16px; background:var(--cream); color:var(--text); outline:none; transition:border-color .2s; }
+.inp-group input:focus { border-color:var(--rose); }
+.btn-auth { width:100%; padding:14px; background:var(--rose); color:white; border:none; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:16px; font-weight:500; cursor:pointer; margin-top:6px; }
+.auth-err { color:var(--rose-dark); font-size:13px; margin-top:10px; min-height:18px; }
+
+/* APP SHELL */
+#app { display:none; position:fixed; inset:0; flex-direction:column; }
+
+/* TOP NAV */
+.top-nav {
+  height:var(--nav-h); background:var(--white); border-bottom:1px solid #f0dde4;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 16px; flex-shrink:0;
+  padding-top:env(safe-area-inset-top, 0px);
+}
+.nav-logo { font-family:'Playfair Display',serif; font-size:18px; color:var(--rose-dark); }
+.btn-logout { padding:7px 12px; border:1.5px solid #f0dde4; border-radius:10px; background:transparent; cursor:pointer; font-size:12px; color:var(--text-muted); font-family:'DM Sans',sans-serif; }
+
+/* LOVE COUNTER */
+.counter-bar {
+  background:linear-gradient(135deg,#fce8ec,#f5e6d8);
+  border-bottom:1px solid #f0dde4; padding:8px 16px; text-align:center; flex-shrink:0;
+}
+.counter-bar span { font-family:'Playfair Display',serif; color:var(--rose-dark); font-size:13px; }
+.counter-bar strong { font-size:16px; }
+
+/* CONTENT AREA */
+.content { flex:1; overflow-y:auto; overflow-x:hidden; -webkit-overflow-scrolling:touch; }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  height:var(--bottom-h); background:var(--white); border-top:1px solid #f0dde4;
+  display:flex; flex-shrink:0;
+  padding-bottom:var(--safe-bottom);
+}
+.bottom-tab {
+  flex:1; border:none; background:transparent; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  font-family:'DM Sans',sans-serif; font-size:11px; font-weight:500; color:var(--text-muted);
+  transition:all .2s;
+}
+.bottom-tab.active { color:var(--rose-dark); }
+.bottom-tab .tab-icon { font-size:22px; }
+
+/* PAGES */
+.page { display:none; padding:16px; }
+.page.active { display:block; }
+
+/* PHOTOS */
+.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.page-title { font-family:'Playfair Display',serif; font-size:22px; color:var(--rose-dark); }
+.upload-btn { padding:10px 16px; background:var(--rose); color:white; border:none; border-radius:12px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; display:flex; align-items:center; gap:6px; }
+.upload-btn:disabled { opacity:.6; }
+#file-input { display:none; }
+.upload-prog { background:var(--rose-light); border-radius:12px; padding:10px 14px; margin-bottom:12px; display:none; align-items:center; gap:8px; font-size:13px; color:var(--rose-dark); }
+.upload-prog.show { display:flex; }
+.photos-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
+.photo-card { background:var(--white); border-radius:14px; overflow:hidden; box-shadow:var(--shadow); cursor:pointer; }
+.photo-img { width:100%; aspect-ratio:1; object-fit:cover; display:block; }
+.photo-info { padding:8px 10px; }
+.photo-uploader { font-size:11px; color:var(--rose); font-weight:500; margin-bottom:2px; }
+.photo-note { font-size:11px; color:var(--text-muted); font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-bottom:2px; }
+.photo-date { font-size:10px; color:#c4a4a4; }
+.empty-state { text-align:center; padding:48px 20px; color:var(--text-muted); }
+.empty-icon { font-size:44px; margin-bottom:10px; }
+
+/* MODAL */
+.modal-ov { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:300; flex-direction:column; }
+.modal-ov.open { display:flex; }
+.modal-top { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; padding-top:calc(12px + env(safe-area-inset-top,0px)); }
+.modal-close-btn { background:rgba(255,255,255,0.15); border:none; color:white; border-radius:50%; width:36px; height:36px; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; }
+.modal-img-wrap { flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; padding:0 8px; }
+.modal-img { max-width:100%; max-height:100%; object-fit:contain; border-radius:12px; }
+.modal-bottom { background:var(--white); border-radius:20px 20px 0 0; padding:20px 16px; padding-bottom:calc(20px + var(--safe-bottom)); max-height:55vh; overflow-y:auto; }
+.modal-meta { font-size:12px; color:var(--text-muted); margin-bottom:12px; }
+.modal-btns { display:flex; gap:8px; margin-bottom:16px; }
+.btn-sm { padding:8px 14px; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; border:1.5px solid #f0dde4; background:transparent; color:var(--text-muted); text-decoration:none; display:inline-flex; align-items:center; }
+.btn-sm-danger { color:#c94560; }
+.modal-label { font-size:11px; font-weight:500; color:var(--text-muted); text-transform:uppercase; letter-spacing:.5px; display:block; margin-bottom:6px; }
+.modal-note-area { width:100%; padding:10px 12px; border:1.5px solid #f0dde4; border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; resize:none; outline:none; background:var(--cream); color:var(--text); min-height:70px; }
+.modal-note-area:focus { border-color:var(--rose); }
+.btn-save-note { padding:10px 18px; background:var(--rose); color:white; border:none; border-radius:10px; cursor:pointer; font-family:'DM Sans',sans-serif; font-size:14px; margin-top:8px; }
+.note-ok { color:#5a9a6a; font-size:12px; margin-top:4px; display:none; }
+
+/* MESSAGES */
+#page-messages { padding:0; display:none; flex-direction:column; height:100%; }
+#page-messages.active { display:flex; }
+.msgs-list { flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:12px 16px; display:flex; flex-direction:column; gap:8px; }
+.msg { max-width:78%; display:flex; flex-direction:column; gap:2px; }
+.msg.mine { align-self:flex-end; align-items:flex-end; }
+.msg.theirs { align-self:flex-start; align-items:flex-start; }
+.msg-bubble { padding:10px 14px; border-radius:18px; font-size:15px; line-height:1.5; word-break:break-word; }
+.msg.mine .msg-bubble { background:var(--rose); color:white; border-bottom-right-radius:4px; }
+.msg.theirs .msg-bubble { background:var(--white); color:var(--text); box-shadow:var(--shadow); border-bottom-left-radius:4px; }
+.msg-meta { font-size:10px; color:var(--text-muted); padding:0 4px; }
+.msg-sender { font-size:10px; color:var(--rose); font-weight:500; }
+.msg-actions { display:flex; gap:4px; margin-top:2px; }
+.msg-action-btn { padding:3px 8px; border:none; background:rgba(0,0,0,0.05); cursor:pointer; font-size:11px; color:var(--text-muted); border-radius:6px; font-family:'DM Sans',sans-serif; }
+.msg-edit-area { width:100%; padding:8px 12px; border:1.5px solid var(--rose); border-radius:12px; font-family:'DM Sans',sans-serif; font-size:14px; outline:none; background:var(--cream); color:var(--text); resize:none; margin-top:4px; }
+.msg-edit-btns { display:flex; gap:6px; margin-top:4px; }
+.msg-edit-save { padding:5px 12px; background:var(--rose); color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; }
+.msg-edit-cancel { padding:5px 12px; background:transparent; color:var(--text-muted); border:1px solid #f0dde4; border-radius:8px; cursor:pointer; font-size:12px; font-family:'DM Sans',sans-serif; }
+.msg-input-bar {
+  display:flex; gap:8px; padding:10px 12px;
+  padding-bottom:calc(10px + var(--safe-bottom));
+  background:var(--white); border-top:1px solid #f0dde4; flex-shrink:0;
+}
+.msg-input { flex:1; padding:12px 16px; border:1.5px solid #f0dde4; border-radius:24px; font-family:'DM Sans',sans-serif; font-size:15px; background:var(--cream); color:var(--text); outline:none; }
+.msg-input:focus { border-color:var(--rose); }
+.btn-send { width:46px; height:46px; background:var(--rose); color:white; border:none; border-radius:50%; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.msgs-empty { text-align:center; padding:40px; color:var(--text-muted); font-style:italic; }
+
+.loading { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,.4); border-top-color:white; border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <span class="auth-heart">💕</span>
+    <h1 class="auth-title">Sen ve Ben</h1>
+    <p class="auth-sub">Sadece ikimizin yeri</p>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="atab-login" onclick="switchTab('login')">Giriş Yap</button>
+      <button class="auth-tab" id="atab-register" onclick="switchTab('register')">Kayıt Ol</button>
+    </div>
+    <div id="login-form">
+      <div class="inp-group"><label>E-posta</label><input type="email" id="l-email" placeholder="ornek@mail.com" autocomplete="email"></div>
+      <div class="inp-group"><label>Şifre</label><input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password"></div>
+      <button class="btn-auth" onclick="doLogin()">Giriş Yap</button>
+    </div>
+    <div id="register-form" style="display:none">
+      <div class="inp-group"><label>İsmin</label><input type="text" id="r-name" placeholder="Adın" autocomplete="name"></div>
+      <div class="inp-group"><label>E-posta</label><input type="email" id="r-email" placeholder="ornek@mail.com" autocomplete="email"></div>
+      <div class="inp-group"><label>Şifre</label><input type="password" id="r-pass" placeholder="En az 6 karakter" autocomplete="new-password"></div>
+      <button class="btn-auth" onclick="doRegister()">Kayıt Ol</button>
+    </div>
+    <p class="auth-err" id="auth-err"></p>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="top-nav">
+    <div class="nav-logo">💕 Sen ve Ben</div>
+    <button class="btn-logout" onclick="doLogout()">Çıkış</button>
+  </div>
+  <div class="counter-bar">
+    <span>💕 <strong id="c-days">0</strong> gün <strong id="c-hours">0</strong> sa <strong id="c-mins">0</strong> dk <strong id="c-secs">0</strong> sn 💕</span>
+  </div>
+  <div class="content" id="main-content">
+    <!-- PHOTOS PAGE -->
+    <div class="page active" id="page-photos">
+      <div class="page-header">
+        <h2 class="page-title">Anılarımız 📸</h2>
+        <button class="upload-btn" onclick="document.getElementById('file-input').click()" id="upload-btn">+ Ekle</button>
+        <input type="file" id="file-input" accept="image/*" multiple onchange="uploadPhotos(this)">
+
+      </div>
+      <div class="upload-prog" id="upload-prog">
+        <div class="loading" style="border-color:rgba(201,69,96,.3);border-top-color:var(--rose-dark)"></div>
+        <span id="upload-prog-text">Yükleniyor...</span>
+      </div>
+      <div class="photos-grid" id="photos-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🌸</div><p>Henüz fotoğraf yok!</p></div>
+      </div>
+    </div>
+
+    <!-- MESSAGES PAGE -->
+    <div class="page" id="page-messages">
+      <div class="msgs-list" id="msgs-list">
+        <div class="msgs-empty">Henüz mesaj yok 👋</div>
+      </div>
+      <div class="msg-input-bar">
+        <input type="text" class="msg-input" id="msg-input" placeholder="Bir şeyler yaz..." onkeydown="if(event.key==='Enter')doSend()">
+        <button class="btn-send" onclick="doSend()">➤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <button class="bottom-tab active" id="btab-photos" onclick="showPage('photos')">
+      <span class="tab-icon">📷</span>Fotoğraflar
+    </button>
+    <button class="bottom-tab" id="btab-messages" onclick="showPage('messages')">
+      <span class="tab-icon">💬</span>Mesajlar
+    </button>
+  </div>
+</div>
+
+<!-- PHOTO MODAL -->
+<div class="modal-ov" id="photo-modal">
+  <div class="modal-top">
+    <div style="color:white;font-size:13px;" id="modal-meta"></div>
+    <button class="modal-close-btn" onclick="closeModal()">✕</button>
+  </div>
+  <div class="modal-img-wrap">
+    <img class="modal-img" id="modal-img" src="" alt="">
+  </div>
+  <div class="modal-bottom">
+    <div class="modal-btns">
+      <a class="btn-sm" id="modal-dl" href="#" download target="_blank">⬇ İndir</a>
+      <button class="btn-sm btn-sm-danger" onclick="deletePhoto()">🗑 Sil</button>
+    </div>
+    <label class="modal-label">Not / Açıklama</label>
+    <textarea class="modal-note-area" id="modal-note" placeholder="Bu fotoğraf hakkında not ekle..."></textarea>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button class="btn-save-note" onclick="saveNote()">Notu Kaydet</button>
+      <span class="note-ok" id="note-ok">✓ Kaydedildi!</span>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, orderBy, query, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDZCgnEsUrIIqJd34MEvIp_a6CVR3kUDSc",
+  authDomain: "sen-ve-ben-4b775.firebaseapp.com",
+  projectId: "sen-ve-ben-4b775",
+  storageBucket: "sen-ve-ben-4b775.firebasestorage.app",
+  messagingSenderId: "831950547119",
+  appId: "1:831950547119:web:766f993d1a36b10a790c5a"
+});
+const auth = getAuth(app);
+const db = getFirestore(app);
+const CLOUD = "dyzao1ixg";
+const PRESET = "sen_ve_ben";
+
+let me = null, photoId = null, unsubM = null, unsubP = null;
+
+// PWA
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js');
+
+// AUTH
+window.switchTab = t => {
+  document.getElementById('login-form').style.display = t==='login'?'block':'none';
+  document.getElementById('register-form').style.display = t==='register'?'block':'none';
+  document.getElementById('atab-login').classList.toggle('active', t==='login');
+  document.getElementById('atab-register').classList.toggle('active', t==='register');
+  document.getElementById('auth-err').textContent = '';
+};
+
+window.doLogin = async () => {
+  const e = document.getElementById('l-email').value.trim();
+  const p = document.getElementById('l-pass').value;
+  const err = document.getElementById('auth-err');
+  err.textContent = '';
+  if (!e||!p) { err.textContent = 'E-posta ve şifre gerekli.'; return; }
+  try { await signInWithEmailAndPassword(auth, e, p); }
+  catch(ex) { err.textContent = 'Giriş başarısız. Bilgilerini kontrol et.'; }
+};
+
+window.doRegister = async () => {
+  const n = document.getElementById('r-name').value.trim();
+  const e = document.getElementById('r-email').value.trim();
+  const p = document.getElementById('r-pass').value;
+  const err = document.getElementById('auth-err');
+  err.textContent = '';
+  if (!n||!e||!p) { err.textContent = 'Tüm alanları doldur.'; return; }
+  if (p.length < 6) { err.textContent = 'Şifre en az 6 karakter olmalı.'; return; }
+  try {
+    const c = await createUserWithEmailAndPassword(auth, e, p);
+    await updateProfile(c.user, { displayName: n });
+  } catch(ex) {
+    if (ex.code==='auth/email-already-in-use') err.textContent = 'Bu e-posta zaten kayıtlı.';
+    else err.textContent = 'Kayıt başarısız: ' + ex.message;
+  }
+};
+
+window.doLogout = async () => {
+  if (unsubM) unsubM(); if (unsubP) unsubP();
+  await signOut(auth);
+};
+
+// NAV
+window.showPage = pg => {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.bottom-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+pg).classList.add('active');
+  document.getElementById('btab-'+pg).classList.add('active');
+  if (pg==='messages') setTimeout(()=>{ const l=document.getElementById('msgs-list'); l.scrollTop=l.scrollHeight; },100);
+};
+
+// PHOTOS
+window.uploadPhotos = async input => {
+  const files = Array.from(input.files); if (!files.length) return;
+  const btn = document.getElementById('upload-btn');
+  const prog = document.getElementById('upload-prog');
+  const progText = document.getElementById('upload-prog-text');
+  btn.disabled = true; btn.innerHTML = '<div class="loading"></div>';
+  prog.classList.add('show');
+  let done = 0;
+  for (const file of files) {
+    progText.textContent = files.length > 1 ? `Yükleniyor... (${done+1}/${files.length})` : 'Yükleniyor...';
+    try {
+      const fd = new FormData();
+      fd.append('file', file); fd.append('upload_preset', PRESET);
+      const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUD+'/image/upload', {method:'POST',body:fd});
+      const data = await res.json();
+      if (data.secure_url) {
+        await addDoc(collection(db,'photos'), { url:data.secure_url, note:'', uploadedBy:me.displayName||me.email, uploadedAt:serverTimestamp() });
+        sendNotif('📸 ' + (me.displayName||'Sevgilim'), 'Yeni bir fotoğraf ekledi!');
+      }
+    } catch(ex) { console.error(ex); }
+    done++;
+  }
+  btn.disabled=false; btn.innerHTML='+ Ekle';
+  prog.classList.remove('show'); input.value='';
+};
+
+function loadPhotos() {
+  const q = query(collection(db,'photos'), orderBy('uploadedAt','desc'));
+  unsubP = onSnapshot(q, snap => {
+    const g = document.getElementById('photos-grid');
+    if (snap.empty) { g.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🌸</div><p>Henüz fotoğraf yok!</p></div>'; return; }
+    g.innerHTML='';
+    snap.forEach(ds => {
+      const d = ds.data();
+      const c = document.createElement('div'); c.className='photo-card'; c.onclick=()=>openModal(ds.id,d);
+      const dt = d.uploadedAt?.toDate ? d.uploadedAt.toDate().toLocaleDateString('tr-TR') : '';
+      c.innerHTML='<img class="photo-img" src="'+d.url+'" loading="lazy" alt="">'
+        +'<div class="photo-info"><div class="photo-uploader">'+( d.uploadedBy||'')+'</div>'
+        +(d.note?'<div class="photo-note">'+d.note+'</div>':'')
+        +'<div class="photo-date">'+dt+'</div></div>';
+      g.appendChild(c);
+    });
+  });
+}
+
+window.openModal = (id, d) => {
+  photoId = id;
+  document.getElementById('modal-img').src = d.url;
+  document.getElementById('modal-dl').href = d.url;
+  document.getElementById('modal-note').value = d.note||'';
+  const dt = d.uploadedAt?.toDate ? d.uploadedAt.toDate().toLocaleDateString('tr-TR',{day:'numeric',month:'long',year:'numeric'}) : '';
+  document.getElementById('modal-meta').textContent = (d.uploadedBy||'') + (dt?' · '+dt:'');
+  document.getElementById('note-ok').style.display='none';
+  document.getElementById('photo-modal').classList.add('open');
+};
+window.closeModal = () => { document.getElementById('photo-modal').classList.remove('open'); photoId=null; };
+window.saveNote = async () => {
+  if (!photoId) return;
+  await updateDoc(doc(db,'photos',photoId), { note: document.getElementById('modal-note').value });
+  document.getElementById('note-ok').style.display='inline';
+  setTimeout(()=>document.getElementById('note-ok').style.display='none', 2000);
+};
+window.deletePhoto = async () => {
+  if (!photoId) return;
+  if (!confirm('Bu fotoğrafı silmek istediğine emin misin?')) return;
+  await deleteDoc(doc(db,'photos',photoId)); closeModal();
+};
+
+// MESSAGES
+function loadMessages() {
+  const q = query(collection(db,'messages'), orderBy('sentAt','asc'));
+  unsubM = onSnapshot(q, snap => {
+    const list = document.getElementById('msgs-list');
+    if (snap.empty) { list.innerHTML='<div class="msgs-empty">Henüz mesaj yok 👋</div>'; return; }
+    list.innerHTML='';
+    snap.forEach(ds => {
+      const d = ds.data();
+      const isMine = d.uid===me.uid;
+      const div = document.createElement('div'); div.className='msg '+(isMine?'mine':'theirs');
+      const md = d.sentAt?.toDate ? d.sentAt.toDate() : null;
+      const now = new Date(); let time='';
+      if (md) {
+        const ts = md.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+        if (md.toDateString()===now.toDateString()) time='Bugün '+ts;
+        else if (new Date(now-86400000).toDateString()===md.toDateString()) time='Dün '+ts;
+        else time=md.toLocaleDateString('tr-TR',{day:'numeric',month:'long'})+' '+ts;
+      }
+      div.innerHTML=(!isMine?'<div class="msg-sender">'+d.senderName+'</div>':'')
+        +'<div class="msg-bubble">'+esc(d.text)+'</div>'
+        +'<div class="msg-meta">'+time+(d.edited?' (düzenlendi)':'')+'</div>'
+        +(isMine?'<div class="msg-actions"><button class="msg-action-btn" onclick="editMsg(\''+ds.id+'\',this)">✏️</button><button class="msg-action-btn" onclick="delMsg(\''+ds.id+'\')">🗑</button></div>':'');
+      list.appendChild(div);
+    });
+    list.scrollTop = list.scrollHeight;
+  });
+}
+
+window.doSend = async () => {
+  const inp = document.getElementById('msg-input');
+  const text = inp.value.trim(); if (!text) return;
+  inp.value='';
+  await addDoc(collection(db,'messages'), { text, uid:me.uid, senderName:me.displayName||me.email, sentAt:serverTimestamp() });
+  sendNotif('💬 ' + (me.displayName||'Sevgilim'), text);
+};
+
+window.delMsg = async id => {
+  if (!confirm('Bu mesajı silmek istediğine emin misin?')) return;
+  await deleteDoc(doc(db,'messages',id));
+};
+
+window.editMsg = (id, btn) => {
+  const div = btn.closest('.msg');
+  const bubble = div.querySelector('.msg-bubble');
+  const actions = div.querySelector('.msg-actions');
+  bubble.style.display='none'; actions.style.display='none';
+  const ta = document.createElement('textarea'); ta.className='msg-edit-area'; ta.value=bubble.textContent;
+  const btns = document.createElement('div'); btns.className='msg-edit-btns';
+  btns.innerHTML='<button class="msg-edit-save">Kaydet</button><button class="msg-edit-cancel">İptal</button>';
+  div.appendChild(ta); div.appendChild(btns);
+  btns.querySelector('.msg-edit-save').onclick = async () => {
+    const t = ta.value.trim(); if (!t) return;
+    await updateDoc(doc(db,'messages',id), {text:t, edited:true});
+    ta.remove(); btns.remove(); bubble.style.display=''; actions.style.display='';
+  };
+  btns.querySelector('.msg-edit-cancel').onclick = () => { ta.remove(); btns.remove(); bubble.style.display=''; actions.style.display=''; };
+};
+
+function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// COUNTER
+function tick() {
+  const diff = new Date() - new Date('2023-11-03T00:00:00');
+  document.getElementById('c-days').textContent = Math.floor(diff/86400000);
+  document.getElementById('c-hours').textContent = Math.floor((diff%86400000)/3600000);
+  document.getElementById('c-mins').textContent = Math.floor((diff%3600000)/60000);
+  document.getElementById('c-secs').textContent = Math.floor((diff%60000)/1000);
+}
+tick(); setInterval(tick, 1000);
+
+// SEND NOTIFICATION
+async function sendNotif(title, message) {
+  try {
+    await fetch('https://onesignal.com/api/v1/notifications', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Basic os_v2_app_h4wrmv4xxbfqnprp7ycpgwpvgcuigytg47je6v5lke4mvsdxrof2ifno6w6226ywfko642tcroftrqumi5n47sf2szgvpud6xah4o7a'
+      },
+      body: JSON.stringify({
+        app_id: '3f2d1657-97b8-4b06-be2f-fe04f359f530',
+        included_segments: ['All'],
+        headings: { en: title },
+        contents: { en: message },
+        url: 'https://sen-ve-ben-6lt5.vercel.app'
+      })
+    });
+  } catch(e) { console.log('Bildirim gönderilemedi:', e); }
+}
+
+// AUTH STATE
+onAuthStateChanged(auth, user => {
+  if (user) {
+    me = user;
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app').style.display='flex';
+    loadPhotos(); loadMessages();
+  } else {
+    me = null;
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('app').style.display='none';
+  }
+});
+</script>
+</body>
+</html>
